@@ -4,6 +4,8 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
+import lessonPdfUrl from './assets/lesson.pdf';
+
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function App() {
@@ -312,8 +314,8 @@ export default function App() {
               <h2 className="text-xl font-bold text-slate-800">كتاب الدرس</h2>
             </div>
             <a 
-              href="/lesson.pdf" 
-              download 
+              href={lessonPdfUrl}
+              download="lesson.pdf"
               className="flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors"
             >
               <FileDown className="w-4 h-4" />
@@ -330,7 +332,7 @@ export default function App() {
             ) : (
               <div className="w-full max-w-[800px] flex flex-col items-center">
                 <Document
-                  file="/lesson.pdf"
+                  file={lessonPdfUrl}
                   onLoadSuccess={onDocumentLoadSuccess}
                   onLoadError={onDocumentLoadError}
                   loading={
