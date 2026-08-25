@@ -1,0 +1,6 @@
+{
+  "name": "آداب قضاء الحاجة ونواقض الوضوء",
+  "description": "منصة مبسطة لعرض تفريغ الدرس الصوتي والنصي وملف PDF.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
