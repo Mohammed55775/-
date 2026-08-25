@@ -1,8 +1,38 @@
 import { useState } from 'react';
-import { Youtube, BookOpen, ExternalLink, FileText, FileDown } from 'lucide-react';
+import { Youtube, BookOpen, ExternalLink, FileText, FileDown, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function App() {
   const [showTranscript, setShowTranscript] = useState(false);
+  const [numPages, setNumPages] = useState<number>();
+  const [pageNumber, setPageNumber] = useState<number>(1);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+
+  function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
+    setNumPages(numPages);
+    setPageNumber(1);
+    setPdfError(null);
+  }
+
+  function onDocumentLoadError(error: Error): void {
+    setPdfError(error.message);
+  }
+
+  function changePage(offset: number) {
+    setPageNumber(prevPageNumber => prevPageNumber + offset);
+  }
+
+  function previousPage() {
+    changePage(-1);
+  }
+
+  function nextPage() {
+    changePage(1);
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans" dir="rtl">
@@ -273,8 +303,8 @@ export default function App() {
         )}
 
         {/* Embedded PDF Viewer Section */}
-        <section className="bg-white p-4 md:p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col h-[600px]">
-          <div className="flex items-center justify-between mb-4">
+        <section className="bg-white p-4 md:p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col items-center">
+          <div className="flex items-center justify-between mb-4 w-full">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-indigo-50 rounded-lg">
                 <BookOpen className="w-5 h-5 text-indigo-600" />
@@ -291,12 +321,60 @@ export default function App() {
             </a>
           </div>
           
-          <div className="flex-1 w-full bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
-            <iframe 
-              src="/lesson.pdf" 
-              className="w-full h-full border-none"
-              title="ملف PDF للدرس"
-            />
+          <div className="w-full bg-slate-100/50 rounded-xl overflow-hidden border border-slate-200 flex flex-col items-center p-4">
+            {pdfError ? (
+              <div className="py-12 text-center text-red-500">
+                <p>عذراً، حدث خطأ أثناء تحميل ملف الـ PDF.</p>
+                <p className="text-sm mt-2 opacity-80">{pdfError}</p>
+              </div>
+            ) : (
+              <div className="w-full max-w-[800px] flex flex-col items-center">
+                <Document
+                  file="/lesson.pdf"
+                  onLoadSuccess={onDocumentLoadSuccess}
+                  onLoadError={onDocumentLoadError}
+                  loading={
+                    <div className="py-20 flex flex-col items-center text-slate-400">
+                      <Loader2 className="w-8 h-8 animate-spin mb-4" />
+                      <p>جاري تحميل الكتاب...</p>
+                    </div>
+                  }
+                  className="w-full flex justify-center shadow-md bg-white border border-slate-200"
+                >
+                  <Page 
+                    pageNumber={pageNumber} 
+                    renderTextLayer={true}
+                    renderAnnotationLayer={true}
+                    className="max-w-full"
+                    width={Math.min(window.innerWidth - 64, 800)}
+                  />
+                </Document>
+
+                {numPages && (
+                  <div className="flex items-center gap-4 mt-6 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
+                    <button
+                      type="button"
+                      disabled={pageNumber <= 1}
+                      onClick={previousPage}
+                      className="p-2 rounded-full hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronRight className="w-5 h-5 text-slate-700" />
+                    </button>
+                    <p className="text-slate-600 font-medium">
+                      صفحة {pageNumber} من {numPages}
+                    </p>
+                    <button
+                      type="button"
+                      disabled={pageNumber >= numPages}
+                      onClick={nextPage}
+                      className="p-2 rounded-full hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronLeft className="w-5 h-5 text-slate-700" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </section>
 
